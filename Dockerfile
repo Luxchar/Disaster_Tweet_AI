@@ -14,8 +14,8 @@ RUN pip install --upgrade pip && \
 # Copy project files
 COPY . .
 
-# Expose ports for Jupyter Lab
-EXPOSE 8888
+# Set working directory to src for proper relative imports
+WORKDIR /app/src
 
-# Default command to run the pipeline
-CMD ["python", "src/pipeline_tweet_classifier.py"]
+# Default command to run the CLI
+CMD ["python", "main.py"]

@@ -1,13 +1,15 @@
 version: '3.8'
 
 services:
-  pipeline_disaster_tweet:
+  disaster_tweet_cli:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: disaster-tweet-pipeline
+    container_name: disaster-tweet-cli
     volumes:
       - ./:/app
     environment:
       - PYTHONPATH=/app
-    command: python src/pipeline_tweet_classifier.py
+    stdin_open: true
+    tty: true
+    command: python main.py
