@@ -107,15 +107,30 @@ class DisasterTweetClassifier:
         
         # Load data
         df = pd.read_csv(data_path)
+        logger.info(f"Loaded {len(df)} samples from {data_path}")
+        
+        # Ensure target column exists
+        if target_column not in df.columns:
+            raise ValueError(f"Target column '{target_column}' not found in data")
         
         # Preprocess data
         df_processed = preprocess_dataframe(df, text_column)
+        logger.info(f"After preprocessing: {len(df_processed)} samples remaining")
+        
+        # Ensure we still have the target column after preprocessing
+        if target_column not in df_processed.columns:
+            raise ValueError(f"Target column '{target_column}' lost during preprocessing")
         
         # Train model
         logger.info("Training new model...")
         
-        # Use the renamed column for training
-        df_train = df_processed.rename(columns={'text_clean': 'text'})
+        # Prepare training data with proper column names
+        df_train = df_processed[['text_clean', target_column]].copy()
+        df_train = df_train.rename(columns={'text_clean': 'text'})
+        
+        logger.info(f"Training data shape: {df_train.shape}")
+        logger.info(f"Text column samples: {len(df_train['text'])}")
+        logger.info(f"Target column samples: {len(df_train[target_column])}")
         
         pipeline, train_results = train_model(df_train)
         self.model = pipeline
