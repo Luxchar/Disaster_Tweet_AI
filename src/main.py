@@ -68,7 +68,11 @@ class DisasterTweetClassifier:
         Returns:
             str: Cleaned and preprocessed text
         """
-        return clean_text(text)
+        tokens = clean_text(text)
+        # Convert tokens back to string for model prediction
+        if isinstance(tokens, list):
+            return ' '.join(tokens)
+        return str(tokens)
     
     def predict(self, text: Union[str, List[str]]) -> Union[int, List[int]]:
         """
@@ -124,18 +128,23 @@ class DisasterTweetClassifier:
         # Train model
         logger.info("Training new model...")
         
-        # Prepare training data with proper column names
-        df_train = df_processed[['text_clean', target_column]].copy()
-        df_train = df_train.rename(columns={'text_clean': 'text'})
+        # Prepare training data - df_processed already has 'text' column with cleaned tokens
+        df_train = df_processed[['text', target_column]].copy()
         
         logger.info(f"Training data shape: {df_train.shape}")
         logger.info(f"Text column samples: {len(df_train['text'])}")
         logger.info(f"Target column samples: {len(df_train[target_column])}")
         
-        pipeline, train_results = train_model(df_train)
-        self.model = pipeline
+        model, vectorizer, accuracy, report = train_model(df_train)
         
-        logger.info("Training completed: %s", train_results)
+        # Create model data structure that's compatible with our loading format
+        model_data = {
+            'model': model,
+            'vectorizer': vectorizer
+        }
+        self.model = model_data
+        
+        logger.info(f"Training completed successfully with accuracy: {accuracy:.4f}")
         
         # Save model if path provided
         if save_path:
